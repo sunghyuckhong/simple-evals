@@ -292,8 +292,7 @@ def main():
         # custom local models
         f"{args.model}": ChatCompletionSampler(
             model=args.model,
-            system_message=OPENAI_SYSTEM_MESSAGE_API,
-            max_tokens=args.max_tokens, 
+            max_tokens=args.max_tokens,
             base_url=args.base_url,
             temperature=args.temperature,
             top_p=args.top_p,
