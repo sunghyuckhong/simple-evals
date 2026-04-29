@@ -13,17 +13,17 @@ from tqdm import tqdm
 from .types import EvalResult, Message, SamplerBase, SingleEvalResult
 
 QUERY_TEMPLATE_MULTICHOICE = """
-Answer the following multiple choice question. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where LETTER is one of ABCD. Think step by step before answering.
-
 {Question}
 
 A) {A}
 B) {B}
 C) {C}
 D) {D}
+
+Please reason step by step, and put your final answer letter (one of A, B, C, D) within \\boxed{{}}.
 """.strip()
 
-ANSWER_PATTERN_MULTICHOICE = r"(?i)Answer[ \t]*:[ \t]*\$?([A-D])\$?"
+ANSWER_PATTERN_MULTICHOICE = r"(?s).*\\boxed\{(?:\\text\{)?\s*([A-D])"
 ANSWER_PATTERN = r"(?i)Answer\s*:\s*([^\n]+)"
 MULTILINGUAL_ANSWER_PATTERN_TEMPLATE = (
     "(?i){}[ \t]*([A-D]|[أ-د]|[অ]|[ব]|[ড]|[ঢ]|[Ａ]|[Ｂ]|[Ｃ]|[Ｄ])"
