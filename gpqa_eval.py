@@ -69,9 +69,12 @@ class GPQAEval(Eval):
                 extracted_answer=extracted_answer,
             )
             convo = actual_queried_prompt_messages + [dict(content=response_text, role="assistant")]
-            return SingleEvalResult(
-                html=html, score=score, convo=convo, metrics={"chars": len(response_text)}
-            )
+            metrics = {"chars": len(response_text)}
+            # Capture output token count from the API usage, if the server reports it.
+            usage = sampler_response.response_metadata.get("usage")
+            if usage is not None and getattr(usage, "completion_tokens", None) is not None:
+                metrics["completion_tokens"] = usage.completion_tokens
+            return SingleEvalResult(html=html, score=score, convo=convo, metrics=metrics)
 
         results = common.map_with_progress(fn, self.examples, num_threads=self.n_threads)
         return common.aggregate_results(results)
