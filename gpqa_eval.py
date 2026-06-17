@@ -76,7 +76,13 @@ class GPQAEval(Eval):
                 extracted_answer=extracted_answer,
             )
             convo = actual_queried_prompt_messages + [dict(content=display_text, role="assistant")]
-            metrics = {"chars": len(response_text)}
+            # `chars` = answer text only; `total_chars` = full response (answer + the
+            # reasoning trace the parser splits out of `content`).
+            reasoning_len = len(reasoning_content) if reasoning_content else 0
+            metrics = {
+                "chars": len(response_text),
+                "total_chars": len(response_text) + reasoning_len,
+            }
             # Capture output token count from the API usage, if the server reports it.
             usage = sampler_response.response_metadata.get("usage")
             if usage is not None and getattr(usage, "completion_tokens", None) is not None:
