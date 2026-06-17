@@ -80,9 +80,18 @@ class ChatCompletionSampler(SamplerBase):
                 content = response.choices[0].message.content
                 if content is None:
                     raise ValueError("OpenAI API returned empty response; retrying")
+                # Reasoning models split the <think> trace into a separate field (the
+                # reasoning parser keeps it out of `content`). Capture it — it's an
+                # extra/untyped field on the OpenAI message — so callers can display it.
+                reasoning_content = getattr(
+                    response.choices[0].message, "reasoning_content", None
+                )
                 return SamplerResponse(
                     response_text=content,
-                    response_metadata={"usage": response.usage},
+                    response_metadata={
+                        "usage": response.usage,
+                        "reasoning_content": reasoning_content,
+                    },
                     actual_queried_message_list=message_list,
                 )
             # NOTE: BadRequestError is triggered once for MMMU, please uncomment if you are reruning MMMU

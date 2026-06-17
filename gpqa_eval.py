@@ -61,14 +61,21 @@ class GPQAEval(Eval):
             match = re.search(ANSWER_PATTERN_MULTICHOICE, response_text)
             extracted_answer = match.group(1) if match else None
             score = 1.0 if extracted_answer == correct_answer else 0.0
+            # For the HTML/convo, show the reasoning trace (which the server's reasoning
+            # parser splits out of `content`) followed by the answer. Answer extraction
+            # and `chars` above use response_text (content only), so scoring is unaffected.
+            reasoning_content = sampler_response.response_metadata.get("reasoning_content")
+            display_text = response_text
+            if reasoning_content:
+                display_text = f"<think>\n{reasoning_content}\n</think>\n\n{response_text}"
             html = common.jinja_env.from_string(HTML_JINJA).render(
                 prompt_messages=actual_queried_prompt_messages,
-                next_message=dict(content=response_text, role="assistant"),
+                next_message=dict(content=display_text, role="assistant"),
                 score=score,
                 correct_answer=correct_answer,
                 extracted_answer=extracted_answer,
             )
-            convo = actual_queried_prompt_messages + [dict(content=response_text, role="assistant")]
+            convo = actual_queried_prompt_messages + [dict(content=display_text, role="assistant")]
             metrics = {"chars": len(response_text)}
             # Capture output token count from the API usage, if the server reports it.
             usage = sampler_response.response_metadata.get("usage")
